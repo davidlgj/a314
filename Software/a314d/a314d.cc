@@ -56,6 +56,7 @@
 #define READ_SRAM_HDR_LEN       4
 
 // Addresses to variables in CMEM.
+#define BASE_ADDRESS_LEN        6
 #define R_EVENTS_ADDRESS        12
 #define R_ENABLE_ADDRESS        13
 #define A_EVENTS_ADDRESS        14
@@ -1132,13 +1133,13 @@ static void read_base_address()
     have_base_address = false;
 
     unsigned int ba1 = 0;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < BASE_ADDRESS_LEN; i++)
         ba1 |= spi_read_cmem(i) << (i * 4);
 
     if ((ba1 & 1) == 1)
     {
         unsigned int ba2 = 0;
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < BASE_ADDRESS_LEN; i++)
             ba2 |= spi_read_cmem(i) << (i * 4);
 
         if (ba1 == ba2)

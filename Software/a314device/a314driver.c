@@ -301,6 +301,8 @@ UBYTE read_cp_nibble(int index)
 	return *p & 0xf;
 }
 
+#define BASE_ADDRESS_LEN	6
+
 void write_base_address(void *p)
 {
 	ULONG ba = translate_address_a314(NULL, p);
@@ -312,7 +314,7 @@ void write_base_address(void *p)
 
 	write_cp_nibble(0, 0);
 
-	for (int i = 4; i >= 0; i--)
+	for (int i = BASE_ADDRESS_LEN - 1; i >= 0; i--)
 	{
 		ULONG v = (ba >> (i * 4)) & 0xf;
 		write_cp_nibble(i, (UBYTE)v);
