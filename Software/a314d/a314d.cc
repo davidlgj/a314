@@ -315,7 +315,7 @@ static void spi_read_mem(unsigned int address, unsigned int length)
 {
     logger_trace("SPI read mem address = %d length = %d\n", address, length);
 
-    unsigned int header = (READ_SRAM_CMD << 20) | (address & 0xfffff);
+    unsigned int header = (READ_SRAM_CMD << 21) | (address & 0x1fffff);
 
     tx_buf[0] = (uint8_t)((header >> 16) & 0xff);
     tx_buf[1] = (uint8_t)((header >> 8) & 0xff);
@@ -329,7 +329,7 @@ static void spi_write_mem(unsigned int address, uint8_t *buf, unsigned int lengt
 {
     logger_trace("SPI write mem address = %d length = %d\n", address, length);
 
-    unsigned int header = (WRITE_SRAM_CMD << 20) | (address & 0xfffff);
+    unsigned int header = (WRITE_SRAM_CMD << 21) | (address & 0x1fffff);
 
     tx_buf[0] = (uint8_t)((header >> 16) & 0xff);
     tx_buf[1] = (uint8_t)((header >> 8) & 0xff);
@@ -341,7 +341,7 @@ static void spi_write_mem(unsigned int address, uint8_t *buf, unsigned int lengt
 
 static uint8_t spi_read_cmem(unsigned int address)
 {
-    tx_buf[0] = (uint8_t)((READ_CMEM_CMD << 4) | (address & 0xf));
+    tx_buf[0] = (uint8_t)((READ_CMEM_CMD << 5) | (address & 0xf));
     tx_buf[1] = 0;
     transfer(2);
     logger_trace("SPI read cmem, address = %d, returned = %d\n", address, rx_buf[1]);
@@ -352,7 +352,7 @@ static void spi_write_cmem(unsigned int address, unsigned int data)
 {
     logger_trace("SPI write cmem, address = %d, data = %d\n", address, data);
 
-    tx_buf[0] = (uint8_t)((WRITE_CMEM_CMD << 4) | (address & 0xf));
+    tx_buf[0] = (uint8_t)((WRITE_CMEM_CMD << 5) | (address & 0xf));
     tx_buf[1] = (uint8_t)(data & 0xf);
     transfer(2);
 }

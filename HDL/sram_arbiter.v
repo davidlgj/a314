@@ -12,7 +12,7 @@ module sram_arbiter(
     input               spi_req,
     output              spi_ack,
     input               spi_read,
-    input       [18:0]  spi_address,
+    input       [19:0]  spi_address,
     input               spi_ub,
     input       [7:0]   spi_out_sram_in,
     output reg  [15:0]  spi_in_sram_out,
@@ -78,7 +78,7 @@ module sram_arbiter(
                     sr_we_n <= 1'b1;
                     sr_lb_n <= spi_ub;
                     sr_ub_n <= !spi_ub;
-                    sr_a <= {1'b0, spi_address};
+                    sr_a <= spi_address;
                     sram_drive <= 1'b0;
                     sram_data_out <= spi_ub ? {spi_out_sram_in, 8'b0} : {8'b0, spi_out_sram_in};
 
