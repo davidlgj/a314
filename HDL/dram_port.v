@@ -66,7 +66,7 @@ module dram_port(
         begin
             dram_address[15:8] <= DR_A[7:0];
             dram_address[16] <= DR_A[8];
-            dram_address[18] <= DR_RAS_n[1];
+            dram_address[18] <= ras1;
             dram_read <= DR_WE_n;
         end
 
