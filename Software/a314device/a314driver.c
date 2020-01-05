@@ -71,9 +71,9 @@ struct MyDevice
 struct ExecBase *SysBase;
 
 
-
 #define MAPPING_TYPE_512K	1
 #define MAPPING_TYPE_1M		2
+#define MAPPING_TYPE_2M		3
 
 short mapping_type = 0;
 ULONG mapping_base = 0;
@@ -102,6 +102,12 @@ BOOL overlap(struct MemHeader *mh, ULONG lower, ULONG upper)
 	return lower < (ULONG)(mh->mh_Upper) && (ULONG)(mh->mh_Lower) < upper;
 }
 
+#define HARDCODED_A600_MAPPING	1
+
+/*
+ * This procedure needs an overhaul at some point.
+ * There are currently many ways it could break.
+ */
 BOOL fix_memory()
 {
 	Forbid();
@@ -109,6 +115,18 @@ BOOL fix_memory()
 	struct List *memlist = &(SysBase->MemList);
 	struct Node *node;
 	struct MemHeader *mh;
+
+#if HARDCODED_A600_MAPPING
+	for (node = memlist->lh_Head; node->ln_Succ != NULL; node = node->ln_Succ)
+	{
+		mh = (struct MemHeader *)node;
+		if (mh->mh_Attributes & MEMF_CHIP)
+			mh->mh_Attributes |= MEMF_A314;
+	}
+
+	mapping_type = MAPPING_TYPE_2M;
+	mapping_base = 0;
+#else
 
 	for (node = memlist->lh_Head; node->ln_Succ != NULL; node = node->ln_Succ)
 	{
@@ -211,6 +229,7 @@ BOOL fix_memory()
 
 	mapping_type = split_at == 0x100000 ? MAPPING_TYPE_1M : MAPPING_TYPE_512K;
 	mapping_base = split_at;
+#endif
 
 	Permit();
 	return TRUE;
@@ -1320,6 +1339,13 @@ ULONG translate_address_a314(__reg("a6") struct MyDevice *dev, __reg("a0") void 
 	{
 		ULONG offset = (ULONG)address - mapping_base;
 		if (offset >= 1024 * 1024)
+			return -1;
+		return offset;
+	}
+	else if (mapping_type == MAPPING_TYPE_2M)
+	{
+		ULONG offset = (ULONG)address - mapping_base;
+		if (offset >= 2 * 1024 * 1024)
 			return -1;
 		return offset;
 	}
