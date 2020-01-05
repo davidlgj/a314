@@ -2,13 +2,13 @@ module a314_top(
     input               CLK_14M,
 
     input               DR_WE_n,
-    input               DR_RAS0_n,
-    input               DR_RAS1_n,
-    input               DR_CASL_n,
-    input               DR_CASU_n,
+    input       [1:0]   DR_RAS_n,
+    input       [1:0]   DR_CASL_n,
+    input       [1:0]   DR_CASU_n,
     input       [8:0]   DR_A,
     inout       [15:0]  DR_D,
 
+    input               CP_RTC_CS_n,
     input               CP_RD_n,
     input               CP_WR_n,
     input       [5:2]   CP_A,
@@ -18,10 +18,11 @@ module a314_top(
     output              SR_WE_n,
     output              SR_LB_n,
     output              SR_UB_n,
-    output      [18:0]  SR_A,
+    output      [19:0]  SR_A,
     inout       [15:0]  SR_D,
 
     output              AMI_INT2,
+    output              AMI_LED,
 
     input               RPI_SCLK0,
     input               RPI_SCE0,
@@ -33,6 +34,8 @@ module a314_top(
     output              RTC_SCL,
     inout               RTC_SDA
     );
+
+    assign AMI_LED = 1'b0;
 
     wire clk14 = CLK_14M;
     wire clk200;
@@ -93,7 +96,7 @@ module a314_top(
     wire dram_req;
     wire dram_ack;
     wire dram_read;
-    wire [18:0] dram_address;
+    wire [19:0] dram_address;
     wire dram_lb;
     wire dram_ub;
     wire [15:0] dram_out_sram_in;
@@ -104,8 +107,7 @@ module a314_top(
 
         //.DR_XMEM(DR_XMEM),
         .DR_WE_n(DR_WE_n),
-        .DR_RAS0_n(1'b1), // Change to DR_RAS0_n(DR_RAS0_n) for rev 8 (A500+)
-        .DR_RAS1_n(DR_RAS1_n),
+        .DR_RAS_n(DR_RAS_n),
         .DR_CASL_n(DR_CASL_n),
         .DR_CASU_n(DR_CASU_n),
         .DR_A(DR_A),
@@ -168,6 +170,7 @@ module a314_top(
     clock_port clock_port_inst(
         .clk200(clk200),
 
+        .CP_RTC_CS_n(CP_RTC_CS_n),
         .CP_RD_n(CP_RD_n),
         .CP_WR_n(CP_WR_n),
         .CP_A(CP_A),

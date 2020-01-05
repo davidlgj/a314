@@ -1,6 +1,7 @@
 module clock_port(
     input               clk200,
 
+    input               CP_RTC_CS_n,
     input               CP_RD_n,
     input               CP_WR_n,
     input       [5:2]   CP_A,
@@ -22,8 +23,8 @@ module clock_port(
     output reg  [3:0]   cp_data_out
     );
 
-    wire rd = !CP_RD_n;
-    wire wr = !CP_WR_n;
+    wire rd = !CP_RTC_CS_n && !CP_RD_n;
+    wire wr = !CP_RTC_CS_n && !CP_WR_n;
 
     reg rd_sync_0 = 1'b0;
     reg rd_sync_1 = 1'b0;
