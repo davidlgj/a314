@@ -329,6 +329,45 @@ def process_examine_object(key):
     size = min(size, 2 ** 31 - 1)
     return struct.pack('>HHHhIIIIIB', 1, 0, 666, type_, size, 0, days, mins, ticks, len(fn)) + fn
 
+
+class ListDirCache:
+    """A simple small cache with timeouts. Only has place for one value. """
+
+    def __init__(self, ttl = 3):
+        self.ttl = ttl
+        self.key = ""
+        self.value = []
+        self.time = 0
+
+    def listdir(self, path):
+        """
+        Do a os.listdir that is cached for ttl seconds. Subsequent calls to same path
+        will update the timestamp. Another path will not be cached
+        """
+        t = time.time()
+        same = self.key == path
+        timedOut = t - self.time > self.ttl
+        if same and not timedOut:
+            self.time = t
+            return self.value
+        elif not same and not timedOut:
+            # parallell request
+            print "parallell"
+            return os.listdir(path)
+
+        self.key = path
+        self.time = t
+        self.value = os.listdir(path)
+        print "listing"
+        return self.value
+
+    def clear(self, path):
+        if self.key == path:
+            self.key = ""
+            self.value = []
+            self.time = 0
+
+dicCache = ListDirCache()
 def process_examine_next(key, disk_key):
     logger.debug('ACTION_EXAMINE_NEXT, key: %s, disk_key: %s', key, disk_key)
     ol = locks[key]
@@ -341,11 +380,12 @@ def process_examine_next(key, disk_key):
     if not os.path.isdir(path):
         return struct.pack('>HH', 0, ERROR_OBJECT_WRONG_TYPE)
 
-    entries = os.listdir(path)
+    entries = dicCache.listdir(path)
     have_listed = disk_key - 666
     disk_key += 1
 
     if len(entries) <= have_listed:
+        dicCache.clear(path)
         return struct.pack('>HH', 0, ERROR_NO_MORE_ENTRIES)
 
     fn = entries[have_listed]
